@@ -1,4 +1,4 @@
-# seb-iban-task
+# SEB IBAN Task
 SEB homework task for Junior Software Developer position
 
 ## Install required packages
