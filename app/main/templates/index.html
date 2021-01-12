@@ -1,0 +1,199 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>IBAN Validator</title>
+  <meta name="description" content="IBAN Validator">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+    <center>
+      <h1>IBAN Validator</h1>
+
+        <div class="row">
+          
+          <div class="col-sm-6">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Single IBAN</h5>
+                <p class="card-text">Insert single IBAN to check if it is valid and belongs to SEB.</p>
+                
+                <div class="form-group">
+                  <input type="text" class="form-control" id="ibanInputSingle"  placeholder="Enter IBAN" required="required" pattern="[A-Za-z0-9]{1,20}">
+                </div>
+                <br>
+                <button type="submit" class="btn btn-primary" id="singleIbanButton">Validate</button>
+                <br>
+                <br>
+
+                <table class="table" id="tableSingle" hidden>
+                  <thead class="table-primary">
+                    <tr>
+                      <th scope="col">IBAN</th>
+                      <th scope="col">Valid</th>
+                      <th scope="col">SEB</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th id="tableSingleIBAN"></th>
+                      <td id="tableSingleValid"></td>
+                      <td id="tableSingleSEB"></td>
+                    </tr>
+                  </tbody>
+                </table>
+
+
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">IBAN List</h5>
+                <p class="card-text">Insert list of IBANs separated by new line.</p>
+                
+                <div class="form-group">
+                  <textarea class="form-control" id="ibanInputList" placeholder="Enter IBANs" rows="5"></textarea>
+                </div>
+                <br>
+                <button type="submit" class="btn btn-primary" id="listIbanButton">Validate</button>
+                <br><br>
+                <table class="table" id="tableList" hidden>
+                  <thead class="table-primary">
+                    <tr>
+                      <th scope="col">IBAN</th>
+                      <th scope="col">Valid</th>
+                      <th scope="col">Bank</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    
+                  </tbody>
+                </table>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <br><br>
+
+        <div class="row justify-content-center">
+
+          <div class="col-sm-6">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Single IBAN (supports 54 countries)</h5>
+                <p class="card-text">Insert single IBAN to validate.</p>
+                
+                <div class="form-group">
+                  <input type="text" class="form-control" id="ibanInputMultiCountry" aria-describedby="emailHelp" placeholder="Enter IBAN">
+                </div>
+                <br>
+                <button type="submit" class="btn btn-primary" id="multiCountryIbanButton">Validate</button>
+                <br>
+                <br>
+
+                <table class="table" id="tableMultiCountry" hidden>
+                  <thead class="table-primary">
+                    <tr>
+                      <th scope="col">IBAN</th>
+                      <th scope="col">Valid</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th id="tableSingleIBAN"></th>
+                      <td id="tableSingleValid"></td>
+                    </tr>
+                  </tbody>
+                </table>
+
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+    </center>
+
+    <script>
+      // single iban check
+      $("#singleIbanButton").click(function() {
+        if ($("#ibanInputSingle").val() != "") {
+          let data = {
+            iban: $("#ibanInputSingle").val()
+          }
+          $.ajax({
+            type: "POST",
+            url: "http://localhost:5000/api/iban/check-single",
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: (res) => {
+              $("#tableSingle").removeAttr("hidden").show();
+              $("#tableSingle").find('tbody').text("");
+              $("#tableSingle").find('tbody').append(`<tr><td>${res.iban}</td><td>${res.valid}</td><td>${res.SEB}</td></tr>`);
+            }
+          })
+        } else {
+          alert("Field can not be empty!");
+        }
+        
+      });
+
+      // multiple iban check
+      $("#listIbanButton").click(function() {
+        let data = {
+          ibans: $("#ibanInputList").val().split('\n').filter((item) => item != "")
+        }
+        console.log(data);
+        $.ajax({
+          type: "POST",
+          url: "http://localhost:5000/api/iban/check-list",
+          data: JSON.stringify(data),
+          contentType: "application/json",
+          success: (res) => {
+            $("#tableList").removeAttr("hidden").show();
+            $("#tableList").find('tbody').text("");
+            res.ibans.forEach(item => {
+              $("#tableList").find('tbody').append(`<tr><td>${item.iban}</td><td>${item.valid}</td><td>${item.bank}</td></tr>`);
+            });
+          }
+        })
+      });
+
+      // multiple country iban check
+      $("#multiCountryIbanButton").click(function() {
+        if ($("#ibanInputMultiCountry").val() != "") {
+          let data = {
+            iban: $("#ibanInputMultiCountry").val()
+          }
+          $.ajax({
+            type: "POST",
+            url: "http://localhost:5000/api/iban/check-international",
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: (res) => {
+              $("#tableMultiCountry").removeAttr("hidden").show();
+              $("#tableMultiCountry").find('tbody').text("");
+              $("#tableMultiCountry").find('tbody').append(`<tr><td>${res.iban}</td><td>${res.valid}</td></tr>`);
+            }
+          })
+        } else {
+          alert("Field can not be empty!");
+        }
+        
+      });
+    </script>
+
+</body>
+</html>
