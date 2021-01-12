@@ -11,6 +11,9 @@ pip install -r requirements.txt
 cd app && python app.py
 ```
 
+## Home Page
+http://localhost:5000/
+
 ## API Endpoints
 Endpoints that handle IBAN validation
 
